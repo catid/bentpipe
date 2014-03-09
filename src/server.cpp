@@ -50,6 +50,9 @@ static void on_data(Connexion *conn, const char *data, int len)
 {
 	// TODO: Unpack data here
 
+	char ipname[50];
+	cout << "DATA " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << len << endl;
+
 	for (int ii = 0; ii < m_conns.size(); ++ii) {
 		Connexion *other = m_conns[ii];
 
