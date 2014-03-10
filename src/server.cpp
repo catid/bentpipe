@@ -4,13 +4,18 @@ using namespace std;
 
 #include "Sockets.hpp"
 #include "Enforcer.hpp"
+#include "Clock.hpp"
 using namespace cat;
 
 #include <sys/socket.h>
 
+static Clock m_clock;
+
 struct Connexion
 {
 	NetAddr addr;
+
+	u32 lastData;
 
 	// TODO: Shorthair
 };
@@ -50,20 +55,32 @@ static void on_data(Connexion *conn, const char *data, int len)
 {
 	// TODO: Unpack data here
 
-	char ipname[50];
-	cout << "DATA " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << len << endl;
+	//char ipname[50];
+	//cout << "DATA " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << len << endl;
+
+	u32 now = m_clock.msec();
+
+	conn->lastData = now;
 
 	for (int ii = 0; ii < m_conns.size(); ++ii) {
 		Connexion *other = m_conns[ii];
 
 		if (conn != other) {
-			send_data(other, data, len);
+			if (now - other->lastData >= 10000) {
+				delete other;
+				m_conns.erase(m_conns.begin() + ii);
+				--ii;
+			} else {
+				send_data(other, data, len);
+			}
 		}
 	}
 }
 
 int main()
 {
+	m_clock.OnInitialize();
+
 	UDPSocket s;
 
 	CAT_ENFORCE(s.Create());
@@ -106,6 +123,8 @@ int main()
 	}
 
 	cout << "Good bye." << endl;
+
+	m_clock.OnFinalize();
 
 	return 0;
 }

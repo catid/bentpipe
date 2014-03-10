@@ -14,7 +14,7 @@ LIBS =
 
 # Object files
 
-libcat_o = Sockets.o Enforcer.o
+libcat_o = Sockets.o Enforcer.o Clock.o
 
 server_o = server.o $(libcat_o)
 
