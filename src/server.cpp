@@ -83,7 +83,7 @@ int main()
 
 	UDPSocket s;
 
-	CAT_ENFORCE(s.Create());
+	CAT_ENFORCE(s.Create(false));
 	CAT_ENFORCE(s.Bind(5000));
 	CAT_ENFORCE(s.Valid());
 	CAT_ENFORCE(s.DontFragment());
