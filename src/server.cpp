@@ -67,6 +67,8 @@ static void on_data(Connexion *conn, const char *data, int len)
 
 		if (conn != other) {
 			if (now - other->lastData >= 10000) {
+				char ipname[50];
+				cout << "++ User left " << other->addr.IPToString(ipname, sizeof(ipname)) << " : " << other->addr.GetPort();
 				delete other;
 				m_conns.erase(m_conns.begin() + ii);
 				--ii;
