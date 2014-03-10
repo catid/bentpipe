@@ -80,26 +80,24 @@ static void on_data(Connexion *conn, const char *data, int len)
 	if (data[0] == 0) {
 		handle_special(conn, data, len);
 		return;
-	}
+	} else if (data[0] == 1) {
+		u32 now = m_clock.msec();
 
-	// First 4 bytes are a local timestamp
+		conn->lastData = now;
 
-	u32 now = m_clock.msec();
+		for (int ii = 0; ii < m_conns.size(); ++ii) {
+			Connexion *other = m_conns[ii];
 
-	conn->lastData = now;
-
-	for (int ii = 0; ii < m_conns.size(); ++ii) {
-		Connexion *other = m_conns[ii];
-
-		if (conn != other) {
-			if (now - other->lastData >= 10000) {
-				char ipname[50];
-				cout << "++ User left " << other->addr.IPToString(ipname, sizeof(ipname)) << " : " << other->addr.GetPort() << endl;
-				delete other;
-				m_conns.erase(m_conns.begin() + ii);
-				--ii;
-			} else {
-				send_data(other, data, len);
+			if (conn != other) {
+				if (now - other->lastData >= 10000) {
+					char ipname[50];
+					cout << "++ User left " << other->addr.IPToString(ipname, sizeof(ipname)) << " : " << other->addr.GetPort() << endl;
+					delete other;
+					m_conns.erase(m_conns.begin() + ii);
+					--ii;
+				} else {
+					send_data(other, data, len);
+				}
 			}
 		}
 	}
