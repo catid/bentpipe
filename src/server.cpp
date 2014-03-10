@@ -51,12 +51,37 @@ static void send_data(Connexion *conn, const char *data, int len)
 	CAT_ENFORCE(result == len);
 }
 
+static void handle_special(Connexion *conn, const char *data, int len) {
+	// Time sync:
+	if (len == 6 && data[1] == 0) {
+		// Time sync packet
+		char response[10];
+		response[0] = 0;
+		response[1] = 1;
+
+		u32 client_t0 = getLE(*(u32*)(data + 2));
+		u32 server_t1 = m_clock.msec();
+
+		*(u32*)(response + 2) = getLE(client_t0);
+		*(u32*)(response + 6) = getLE(server_t1);
+
+		send_data(conn, response, 10);
+	}
+}
+
 static void on_data(Connexion *conn, const char *data, int len)
 {
 	// TODO: Unpack data here
 
 	//char ipname[50];
 	//cout << "DATA " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << len << endl;
+
+	if (data[0] == 0) {
+		handle_special(conn, data, len);
+		return;
+	}
+
+	// First 4 bytes are a local timestamp
 
 	u32 now = m_clock.msec();
 
