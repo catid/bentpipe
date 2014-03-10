@@ -5,6 +5,7 @@ using namespace std;
 #include "Sockets.hpp"
 #include "Enforcer.hpp"
 #include "Clock.hpp"
+#include "EndianNeutral.hpp"
 using namespace cat;
 
 #include <sys/socket.h>
