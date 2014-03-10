@@ -52,21 +52,23 @@ static void send_data(Connexion *conn, const char *data, int len)
 	CAT_ENFORCE(result == len);
 }
 
-static void handle_special(Connexion *conn, const char *data, int len) {
+static void handle_special(Connexion *conn, u32 now, const char *data, int len) {
 	// Time sync:
 	if (len == 6 && data[1] == 0) {
 		// Time sync packet
-		char response[10];
+		char response[14];
 		response[0] = 0;
 		response[1] = 1;
 
 		u32 client_t0 = getLE(*(u32*)(data + 2));
-		u32 server_t1 = m_clock.msec();
+		u32 server_t1 = now;
+		u32 server_t2 = m_clock.msec();
 
 		*(u32*)(response + 2) = getLE(client_t0);
 		*(u32*)(response + 6) = getLE(server_t1);
+		*(u32*)(response + 10) = getLE(server_t2);
 
-		send_data(conn, response, 10);
+		send_data(conn, response, 14);
 	}
 }
 
@@ -77,14 +79,13 @@ static void on_data(Connexion *conn, const char *data, int len)
 	//char ipname[50];
 	//cout << "DATA " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << len << endl;
 
+	u32 now = m_clock.msec();
+
+	conn->lastData = now;
+
 	if (data[0] == 0) {
-		handle_special(conn, data, len);
-		return;
+		handle_special(conn, now, data, len);
 	} else if (data[0] == 1) {
-		u32 now = m_clock.msec();
-
-		conn->lastData = now;
-
 		for (int ii = 0; ii < m_conns.size(); ++ii) {
 			Connexion *other = m_conns[ii];
 
