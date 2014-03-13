@@ -133,7 +133,7 @@ void Connexion::OnOOB(u8 *packet, int bytes)
 	if (packet[0] == 0) {
 		cout << "Sync received" << endl;
 		handle_special(this, now, (char*)packet, bytes);
-	} else if (packet[1] == 1) {
+	} else if (packet[0] == 1) {
 		for (int ii = 0; ii < m_conns.size(); ++ii) {
 			Connexion *other = m_conns[ii];
 
