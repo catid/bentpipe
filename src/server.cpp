@@ -96,6 +96,9 @@ static void on_data(Connexion *conn, const char *data, int len)
 // Called with the latest data packet from remote host
 void Connexion::OnPacket(u8 *packet, int bytes)
 {
+	char ipname[50];
+	cout << "REL " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << bytes << endl;
+
 	u32 now = m_clock.msec();
 
 	this->lastData = now;
@@ -120,6 +123,9 @@ void Connexion::OnPacket(u8 *packet, int bytes)
 // Called with the latest OOB packet from remote host
 void Connexion::OnOOB(u8 *packet, int bytes)
 {
+	char ipname[50];
+	cout << "OOB " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << bytes << endl;
+
 	u32 now = m_clock.msec();
 
 	this->lastData = now;
