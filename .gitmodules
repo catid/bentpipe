@@ -1,3 +1,6 @@
 [submodule "libcat"]
 	path = libcat
 	url = https://github.com/catid/libcat
+[submodule "shorthair"]
+	path = shorthair
+	url = git@github.com:catid/shorthair

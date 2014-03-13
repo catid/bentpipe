@@ -8,15 +8,18 @@ CCPP = clang++ -m64
 CC = clang -m64
 OPTFLAGS = -O4
 DBGFLAGS = -g -O0 -DDEBUG
-CFLAGS = -Wall -fstrict-aliasing -I./libcat
+CFLAGS = -Wall -fstrict-aliasing -I ./libcat -I ./shorthair/include -I ./shorthair/longhair/include
 LIBS =
 
 
 # Object files
 
-libcat_o = Sockets.o Enforcer.o Clock.o EndianNeutral.o
+libcat_o = Sockets.o Enforcer.o Clock.o EndianNeutral.o \
+		 	ReuseAllocator.o BitMath.o MemXOR.o MemSwap.o
 
-server_o = server.o $(libcat_o)
+shorthair_o = Shorthair.o cauchy_256.o
+
+server_o = server.o $(libcat_o) $(shorthair_o)
 
 
 # Release target (default)
@@ -67,6 +70,27 @@ Sockets.o : libcat/Sockets.cpp
 
 Enforcer.o : libcat/Enforcer.cpp
 	$(CCPP) $(CFLAGS) -c libcat/Enforcer.cpp
+
+ReuseAllocator.o : libcat/ReuseAllocator.cpp
+	$(CCPP) $(CFLAGS) -c libcat/ReuseAllocator.cpp
+
+BitMath.o : libcat/BitMath.cpp
+	$(CCPP) $(CFLAGS) -c libcat/BitMath.cpp
+
+MemXOR.o : libcat/MemXOR.cpp
+	$(CCPP) $(CFLAGS) -c libcat/MemXOR.cpp
+
+MemSwap.o : libcat/MemSwap.cpp
+	$(CCPP) $(CFLAGS) -c libcat/MemSwap.cpp
+
+
+# Shorthair objects
+
+cauchy_256.o : shorthair/longhair/src/cauchy_256.cpp
+	$(CCPP) $(CFLAGS) -c shorthair/longhair/src/cauchy_256.cpp
+
+Shorthair.o : shorthair/src/Shorthair.cpp
+	$(CCPP) $(CFLAGS) -c shorthair/src/Shorthair.cpp
 
 
 # Executable objects
