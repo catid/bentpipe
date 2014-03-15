@@ -12,6 +12,7 @@ using namespace cat;
 #include <sys/socket.h>
 
 static Clock m_clock;
+static int FAKE_LOSS = 0;
 
 class Connexion : public shorthair::IShorthair
 {
@@ -54,6 +55,10 @@ static Connexion *findConn(const NetAddr addr)
 
 static void send_data(Connexion *conn, const char *data, int len)
 {
+	if (rand() % 100 < FAKE_LOSS) {
+		return;
+	}
+
 	NetAddr::SockAddr addr_out;
 	socklen_t addrlen_out;
 
@@ -87,6 +92,10 @@ static void handle_special(Connexion *conn, u32 now, const char *data, int len) 
 
 static void on_data(Connexion *conn, const char *data, int len)
 {
+	if (rand() % 100 < FAKE_LOSS) {
+		return;
+	}
+
 	//char ipname[50];
 	//cout << "DATA " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << len << endl;
 
@@ -100,6 +109,26 @@ void Connexion::OnPacket(u8 *packet, int bytes)
 	//cout << "REL " << this->addr.IPToString(ipname, sizeof(ipname)) << " : " << this->addr.GetPort() << " length " << bytes << endl;
 
 	u32 now = m_clock.msec();
+
+	if (bytes < 3) {
+		cout << "Truncated packet" << endl;
+		return;
+	}
+
+	packet[bytes] = 0;
+	const char *str = packet + 2;
+
+	// If server command:
+	if (0 == strncmp(str, "CMD ")) {
+		if (0 == strncmp(str, "CMD PLOSS ")) {
+			cout << "Got command: " << str << endl;
+			int loss = atoi(str + 10);
+			FAKE_LOSS = loss;
+		} else {
+			cout << "Unknown command: " << str << endl;
+		}
+		return;
+	}
 
 	this->lastData = now;
 
@@ -160,6 +189,7 @@ void Connexion::SendData(u8 *buffer, int bytes)
 
 int main()
 {
+	Sockets::OnInitialize();
 	m_clock.OnInitialize();
 
 	UDPSocket s;
@@ -230,6 +260,7 @@ int main()
 	cout << "Good bye." << endl;
 
 	m_clock.OnFinalize();
+	Sockets::OnFinalize();
 
 	return 0;
 }
