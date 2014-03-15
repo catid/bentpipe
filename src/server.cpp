@@ -227,10 +227,7 @@ int main()
 
 			shorthair::Settings settings;
 			settings.target_loss = 0.01;
-			settings.min_loss = 0.03;
-			settings.max_loss = 0.3;
-			settings.min_delay = 100;
-			settings.max_delay = 2000;
+			settings.max_delay = 100;
 			settings.max_data_size = 1350;
 			settings.interface = conn;
 
