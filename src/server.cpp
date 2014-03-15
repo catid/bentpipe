@@ -119,8 +119,8 @@ void Connexion::OnPacket(u8 *packet, int bytes)
 	const char *str = (char*)packet + 2;
 
 	// If server command:
-	if (0 == strncmp(str, "CMD ")) {
-		if (0 == strncmp(str, "CMD PLOSS ")) {
+	if (0 == strncmp(str, "CMD ", 4)) {
+		if (0 == strncmp(str, "CMD PLOSS ", 10)) {
 			cout << "Got command: " << str << endl;
 			int loss = atoi(str + 10);
 			FAKE_LOSS = loss;
