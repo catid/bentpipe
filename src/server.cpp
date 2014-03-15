@@ -80,7 +80,7 @@ static void handle_special(Connexion *conn, u32 now, const char *data, int len) 
 		*(u32*)(response + 6) = getLE(server_t1);
 		*(u32*)(response + 10) = getLE(server_t2);
 
-		cout << "Sending OOB response" << endl;
+		//cout << "Sending OOB response" << endl;
 		conn->codec.SendOOB((const u8 *)response, 14);
 	}
 }
@@ -131,7 +131,7 @@ void Connexion::OnOOB(u8 *packet, int bytes)
 	this->lastData = now;
 
 	if (packet[0] == 0) {
-		cout << "Sync received" << endl;
+		//cout << "Sync received" << endl;
 		handle_special(this, now, (char*)packet, bytes);
 	} else if (packet[0] == 1) {
 		for (int ii = 0; ii < m_conns.size(); ++ii) {
@@ -209,7 +209,7 @@ int main()
 			m_conns.push_back(conn);
 
 			char ipname[50];
-			cout << "+ New user: " << src_addr.IPToString(ipname, sizeof(ipname)) << " : " << src_addr.GetPort() << endl;
+			cout << "++ New user: " << src_addr.IPToString(ipname, sizeof(ipname)) << " : " << src_addr.GetPort() << endl;
 		}
 
 		on_data(conn, buffer, len);
