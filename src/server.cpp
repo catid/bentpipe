@@ -116,7 +116,7 @@ void Connexion::OnPacket(u8 *packet, int bytes)
 	}
 
 	packet[bytes] = 0;
-	const char *str = packet + 2;
+	const char *str = (char*)packet + 2;
 
 	// If server command:
 	if (0 == strncmp(str, "CMD ")) {
