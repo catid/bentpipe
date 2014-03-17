@@ -104,6 +104,6 @@ server.o : src/server.cpp
 .PHONY : clean
 
 clean :
-	git submodule update --init
+	git submodule update --init --recursive
 	-rm server valgrindtest *.o
 

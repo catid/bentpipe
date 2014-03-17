@@ -12,6 +12,7 @@ using namespace cat;
 #include <sys/socket.h>
 
 static Clock m_clock;
+static int FAKE_LOSS = 0;
 
 class Connexion : public shorthair::IShorthair
 {
@@ -54,6 +55,10 @@ static Connexion *findConn(const NetAddr addr)
 
 static void send_data(Connexion *conn, const char *data, int len)
 {
+	if (rand() % 100 < FAKE_LOSS) {
+		return;
+	}
+
 	NetAddr::SockAddr addr_out;
 	socklen_t addrlen_out;
 
@@ -80,13 +85,17 @@ static void handle_special(Connexion *conn, u32 now, const char *data, int len) 
 		*(u32*)(response + 6) = getLE(server_t1);
 		*(u32*)(response + 10) = getLE(server_t2);
 
-		cout << "Sending OOB response" << endl;
+		//cout << "Sending OOB response" << endl;
 		conn->codec.SendOOB((const u8 *)response, 14);
 	}
 }
 
 static void on_data(Connexion *conn, const char *data, int len)
 {
+	if (rand() % 100 < FAKE_LOSS) {
+		return;
+	}
+
 	//char ipname[50];
 	//cout << "DATA " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << len << endl;
 
@@ -96,10 +105,30 @@ static void on_data(Connexion *conn, const char *data, int len)
 // Called with the latest data packet from remote host
 void Connexion::OnPacket(u8 *packet, int bytes)
 {
-	char ipname[50];
-	cout << "REL " << this->addr.IPToString(ipname, sizeof(ipname)) << " : " << this->addr.GetPort() << " length " << bytes << endl;
+	//char ipname[50];
+	//cout << "REL " << this->addr.IPToString(ipname, sizeof(ipname)) << " : " << this->addr.GetPort() << " length " << bytes << endl;
 
 	u32 now = m_clock.msec();
+
+	if (bytes < 3) {
+		cout << "Truncated packet" << endl;
+		return;
+	}
+
+	packet[bytes] = 0;
+	const char *str = (char*)packet + 2;
+
+	// If server command:
+	if (0 == strncmp(str, "CMD ", 4)) {
+		if (0 == strncmp(str, "CMD PLOSS ", 10)) {
+			cout << "Got command: " << str << endl;
+			int loss = atoi(str + 10);
+			FAKE_LOSS = loss;
+		} else {
+			cout << "Unknown command: " << str << endl;
+		}
+		return;
+	}
 
 	this->lastData = now;
 
@@ -123,15 +152,15 @@ void Connexion::OnPacket(u8 *packet, int bytes)
 // Called with the latest OOB packet from remote host
 void Connexion::OnOOB(u8 *packet, int bytes)
 {
-	char ipname[50];
-	cout << "OOB " << this->addr.IPToString(ipname, sizeof(ipname)) << " : " << this->addr.GetPort() << " length " << bytes << endl;
+	//char ipname[50];
+	//cout << "OOB " << this->addr.IPToString(ipname, sizeof(ipname)) << " : " << this->addr.GetPort() << " length " << bytes << endl;
 
 	u32 now = m_clock.msec();
 
 	this->lastData = now;
 
 	if (packet[0] == 0) {
-		cout << "Sync received" << endl;
+		//cout << "Sync received" << endl;
 		handle_special(this, now, (char*)packet, bytes);
 	} else if (packet[0] == 1) {
 		for (int ii = 0; ii < m_conns.size(); ++ii) {
@@ -160,6 +189,7 @@ void Connexion::SendData(u8 *buffer, int bytes)
 
 int main()
 {
+	Sockets::OnInitialize();
 	m_clock.OnInitialize();
 
 	UDPSocket s;
@@ -197,10 +227,7 @@ int main()
 
 			shorthair::Settings settings;
 			settings.target_loss = 0.01;
-			settings.min_loss = 0.03;
-			settings.max_loss = 0.3;
-			settings.min_delay = 100;
-			settings.max_delay = 2000;
+			settings.max_delay = 100;
 			settings.max_data_size = 1350;
 			settings.interface = conn;
 
@@ -209,7 +236,7 @@ int main()
 			m_conns.push_back(conn);
 
 			char ipname[50];
-			cout << "+ New user: " << src_addr.IPToString(ipname, sizeof(ipname)) << " : " << src_addr.GetPort() << endl;
+			cout << "++ New user: " << src_addr.IPToString(ipname, sizeof(ipname)) << " : " << src_addr.GetPort() << endl;
 		}
 
 		on_data(conn, buffer, len);
@@ -230,6 +257,7 @@ int main()
 	cout << "Good bye." << endl;
 
 	m_clock.OnFinalize();
+	Sockets::OnFinalize();
 
 	return 0;
 }
