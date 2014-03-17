@@ -92,10 +92,10 @@ static void handle_special(Connexion *conn, u32 now, const char *data, int len) 
 
 static void on_data(Connexion *conn, const char *data, int len)
 {
-/*	if (rand() % 100 < FAKE_LOSS) {
+	if (rand() % 100 < FAKE_LOSS) {
 		return;
 	}
-*/
+
 	//char ipname[50];
 	//cout << "DATA " << conn->addr.IPToString(ipname, sizeof(ipname)) << " : " << conn->addr.GetPort() << " length " << len << endl;
 
