@@ -15,7 +15,7 @@ LIBS =
 # Object files
 
 libcat_o = Sockets.o Enforcer.o Clock.o EndianNeutral.o \
-		 	ReuseAllocator.o BitMath.o MemXOR.o MemSwap.o
+		 	ReuseAllocator.o BitMath.o MemXOR.o MemSwap.o Mutex.o
 
 shorthair_o = Shorthair.o cauchy_256.o
 
@@ -82,6 +82,9 @@ MemXOR.o : libcat/MemXOR.cpp
 
 MemSwap.o : libcat/MemSwap.cpp
 	$(CCPP) $(CFLAGS) -c libcat/MemSwap.cpp
+
+Mutex.o : libcat/Mutex.cpp
+	$(CCPP) $(CFLAGS) -c libcat/Mutex.cpp
 
 
 # Shorthair objects
