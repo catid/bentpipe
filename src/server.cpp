@@ -229,6 +229,7 @@ int main()
 			settings.target_loss = 0.01;
 			settings.max_delay = 100;
 			settings.max_data_size = 1350;
+			settings.conserve_bandwidth = true;
 			settings.interface = conn;
 
 			CAT_ENFORCE(conn->codec.Initialize(settings));
